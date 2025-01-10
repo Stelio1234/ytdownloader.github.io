@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="viewport" content="user-scalable=no, width=device-width" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <title>YT Downloader</title>
+    <style>
+        body {
+            background-color: rgb(218, 218, 218);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        h1 {
+            color: rgb(0, 0, 0);
+            margin-left: 20px;
+            font-size: 24px;
+        }
+
+        .linkbox {
+            background-color: rgb(255, 255, 255);
+            border-radius: 20px;
+            height: 40px;
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .linkbox input {
+            border: none;
+            outline: none;
+            width: 100%;
+            height: 100%;
+            font-size: 16px;
+            padding-left: 10px;
+            border-radius: 20px;
+        }
+
+        button {
+            border-radius: 20px;
+            background-color: red;
+            height: 50px;
+            width: 70px;
+            color: black;
+            border-color: none;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            background-color: green;
+            color: white;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .status.offline {
+            background-color: red;
+        }
+
+        .status.partial {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <h1>YT Downloader</h1>
+    <div class="linkbox">
+        <input type="text" id="linkbox" name="linkbox" placeholder="Paste your link here">
+    </div>
+    <div class="button-grid">
+        <button id="mp4Button">MP4</button>
+        <button id="mp3Button">MP3</button>
+    </div>
+    <div id="status" class="status">Connected</div>
+
+    <script>
+        // Check if the backend server is online
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('https://yt-downloader.example.com/status');
+                if (response.ok) {
+                    document.getElementById('status').textContent = 'Online';
+                    document.getElementById('status').classList.remove('offline', 'partial');
+                    document.getElementById('status').classList.add('online');
+                    document.getElementById('status').style.display = 'block';
+                } else {
+                    document.getElementById('status').textContent = 'Not fully working';
+                    document.getElementById('status').classList.add('partial');
+                    document.getElementById('status').classList.remove('offline', 'online');
+                    document.getElementById('status').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('status').textContent = 'Offline';
+                document.getElementById('status').classList.add('offline');
+                document.getElementById('status').classList.remove('online', 'partial');
+                document.getElementById('status').style.display = 'block';
+            }
+        }
+
+        // Trigger download based on button click
+        async function handleDownload(type) {
+            const url = document.getElementById('linkbox').value;
+            const response = await fetch('https://yt-downloader.example.com/download', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url, type })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                alert(`Download started: ${data.downloadLink}`);
+            } else {
+                alert('Failed to start download');
+            }
+        }
+
+        // Event listeners for buttons
+        document.getElementById('mp4Button').addEventListener('click', () => handleDownload('mp4'));
+        document.getElementById('mp3Button').addEventListener('click', () => handleDownload('mp3'));
+
+        // Check server status every 5 seconds
+        setInterval(checkServerStatus, 5000);
+        checkServerStatus(); // Initial check
+    </script>
+</body>
+</html>
