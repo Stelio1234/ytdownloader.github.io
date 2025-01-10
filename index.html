@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="viewport" content="user-scalable=no, width=device-width" />
-    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />  
     <title>YT Downloader</title>
     <style>
         body {
@@ -15,7 +15,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            flex-direction: column;
+            font-family: Arial, sans-serif;
         }
 
         html {
@@ -25,7 +25,6 @@
         h1 {
             color: rgb(0, 0, 0);
             margin-left: 20px;
-            font-size: 24px;
         }
 
         .linkbox {
@@ -60,28 +59,29 @@
 
         .button-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr; 
             gap: 10px;
-            margin-top: 20px;
         }
 
         .status {
-            position: fixed;
+            position: absolute;
             top: 20px;
             right: 20px;
             padding: 10px;
-            background-color: green;
             color: white;
             border-radius: 5px;
-            display: none;
         }
 
-        .status.offline {
+        .offline {
             background-color: red;
         }
 
-        .status.partial {
+        .not-working {
             background-color: yellow;
+        }
+
+        .online {
+            background-color: green;
         }
     </style>
 </head>
@@ -91,46 +91,40 @@
         <input type="text" id="linkbox" name="linkbox" placeholder="Paste your link here">
     </div>
     <div class="button-grid">
-        <button id="mp4Button">MP4</button>
-        <button id="mp3Button">MP3</button>
+        <button onclick="handleDownload('mp4')">MP4</button>
+        <button onclick="handleDownload('mp3')">MP3</button>
     </div>
-    <div id="status" class="status">Connected</div>
+    <div id="status" class="status offline">Offline</div>
 
     <script>
-        // Check if the backend server is online
         async function checkServerStatus() {
             try {
-                const response = await fetch('https://yt-downloader.example.com/status');
+                const response = await fetch('https://409d87ca81b4.replit.app');
+                const statusElement = document.getElementById('status');
                 if (response.ok) {
-                    document.getElementById('status').textContent = 'Online';
-                    document.getElementById('status').classList.remove('offline', 'partial');
-                    document.getElementById('status').classList.add('online');
-                    document.getElementById('status').style.display = 'block';
+                    statusElement.textContent = 'Online';
+                    statusElement.className = 'status online';
                 } else {
-                    document.getElementById('status').textContent = 'Not fully working';
-                    document.getElementById('status').classList.add('partial');
-                    document.getElementById('status').classList.remove('offline', 'online');
-                    document.getElementById('status').style.display = 'block';
+                    statusElement.textContent = 'Not Fully Working';
+                    statusElement.className = 'status not-working';
                 }
             } catch (error) {
-                document.getElementById('status').textContent = 'Offline';
-                document.getElementById('status').classList.add('offline');
-                document.getElementById('status').classList.remove('online', 'partial');
-                document.getElementById('status').style.display = 'block';
+                const statusElement = document.getElementById('status');
+                statusElement.textContent = 'Offline';
+                statusElement.className = 'status offline';
             }
         }
 
-        // Trigger download based on button click
         async function handleDownload(type) {
             const url = document.getElementById('linkbox').value;
-            const response = await fetch('https://yt-downloader.example.com/download', {
+            const response = await fetch('https://409d87ca81b4.replit.app/download', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ url, type })
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 alert(`Download started: ${data.downloadLink}`);
@@ -139,13 +133,10 @@
             }
         }
 
-        // Event listeners for buttons
-        document.getElementById('mp4Button').addEventListener('click', () => handleDownload('mp4'));
-        document.getElementById('mp3Button').addEventListener('click', () => handleDownload('mp3'));
-
         // Check server status every 5 seconds
         setInterval(checkServerStatus, 5000);
-        checkServerStatus(); // Initial check
+        // Check server status immediately when the page loads
+        checkServerStatus();
     </script>
 </body>
 </html>
